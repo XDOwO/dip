@@ -1,0 +1,13 @@
+python version:3.9.12
+used module:PIL tkinter
+extra module:matplotlib numpy
+pip install matplotlib
+pip install numpy
+
+Explanation of Part B. (a):
+Two images,averaging_1.tif and averaging_2.tif looks the same.The noise is less obvious but still exist.
+Explanation of Part B. (b):
+Image of median_1.tif looks better.The image has almost no noise,but image is blurred.
+Image of median_2.tif looks worse.The number of noise increased and the subject of image is less obvious.
+Comparing median_1.tif and sharpening.tif
+The sharpening.tif emphasize the border of the pirate.
