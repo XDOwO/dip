@@ -379,7 +379,7 @@ window.geometry("1920x1080")
 window.title("Hw2")
 window.config(bg='#F4FEEC')
 # grayscale image function in hw2
-title=tkinter.Label(window,text='Welcome to Homework 2',bg='#62806A',font = ('Arial',18),fg="#ffffff",border=34)
+title=tkinter.Label(window,text='Welcome to Homework 3',bg='#62806A',font = ('Arial',18),fg="#ffffff",border=34)
 button=tkinter.Button(window,text='Open File',bg='#62806A',font = ('Arial',18),command=open_file)
 button_histogram=tkinter.Button(window,text='Histogram',bg='#62806A',font = ('Arial',18),command=call_histogram)
 button_bit_plane=tkinter.Button(window,text='Bit Plane',bg='#62806A',font = ('Arial',18),command=call_bit_plane)
