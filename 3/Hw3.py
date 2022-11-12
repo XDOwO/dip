@@ -48,10 +48,11 @@ def show_homepage():
     button_save_files.grid(column=1,rowspan=3,sticky="ew")
 def rgb_identifier():
     global iscolor,im
+    rgbim=im.convert("RGB")
     w, h = im.size
     for i in range(w):
         for j in range(h):
-            r, g, b = im.getpixel((i,j))
+            r,g,b = rgbim.getpixel((i,j))
             if r != g != b:
                 iscolor=True
                 return

@@ -4,10 +4,9 @@ extra module:matplotlib numpy
 pip install matplotlib
 pip install numpy
 
-Explanation of Part B. (a):
-Two images,averaging_1.tif and averaging_2.tif looks the same.The noise is less obvious but still exist.
-Explanation of Part B. (b):
-Image of median_1.tif looks better.The image has almost no noise,but image is blurred.
-Image of median_2.tif looks worse.The number of noise increased and the subject of image is less obvious.
-Comparing median_1.tif and sharpening.tif
-The sharpening.tif emphasize the border of the pirate.
+The explanation of 3.:
+1.multiplying the image by (-1)^x+y:if (x+y) mod 2 = 1,the pixel will become black.Making the image looks like a chessboard.
+2.DFT:DFT
+3.Conjugation:Rotate the original image 180 degree,but almost looks almost the same as DFT.
+4.Inverse DFT:The imgae have the border of the rotated image.
+5.multiplying the real part of the result by(-1)^x+y:The 180-degree-rotated image.
