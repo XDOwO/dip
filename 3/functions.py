@@ -220,16 +220,21 @@ def hsi_component(im,channel):
     if channel==0 :
         for i in range(v):
             for j in range(h):
-                lim.putpixel((j,i),int(hsv_im_arr[i][j][channel]))
+                r,g,b=im.getpixel((j,i))
+                lim.putpixel((j,i),rgb_to_hue(r,g,b))
         return lim
     elif channel==1:
-        arr = np.empty((v,h))
         for i in range(v):
             for j in range(h):
-                arr[i][j] = rgb_to_saturity(*im.getpixel((j,i)))*255+0.5
+                r,g,b=im.getpixel((j,i))
+                lim.putpixel((j,i),rgb_to_saturity(r,g,b))
         # print(convert_array_to_img(arr))
-        return convert_array_to_img(arr)
+        return lim
     else:
+        for i in range(v):
+            for j in range(h):
+                r,g,b=im.getpixel((j,i))
+                lim.putpixel((j,i),rgb_to_intensity(r,g,b))
         return lim
     # print(hsv_im_arr)
     # return im
@@ -397,45 +402,64 @@ def convert_hsv_to_rgb(h,s,v,img):
     return convert_array_to_img(im,"RGB")
 
 def HSI_to_rgb(h, s, i):
-    if 0 < h <= 120 :
+    if h==0:
+        r = i + 2*i*s
+        g = i - i*s
+        b = i - i*s
+    elif 0 < h < 120 :
         b = i * (1 - s)
         r = i * (1 + (s * cos(radians(h)) / cos(radians(60) - radians(h))))
         g = i * 3 - (r + b)
+    elif h == 120:
+        r = i - i*s
+        g = i + 2*i*s
+        b = i- i*s
     elif 120 < h <= 240:
         h -= 120
         r = i * (1 - s)
         g = i * (1 + (s * cos(radians(h)) / cos(radians(60) - radians(h))))
         b = 3 * i - (r + g)
+    elif h==240:
+        r = i - i*s
+        g = i - i*s
+        b = i + 2*i*s
     else:
         h -= 240
         g = i * (1 - s)
         b = i * (1 + (s * cos(radians(h)) / cos(radians(60) - radians(h))))
         r = i * 3 - (g + b)
     # print(r,g,b)
-    return [r, g, b]
+    return [i if 0 <= i <=255 else 255 for i in [r, g, b]]
 
 
 def rgb_to_hue(r, g, b):
-    angle = 0
-    if b != g != r:
-        angle = 0.5 * ((r - g) + (r - b)) / sqrt(((r - g) ** 2) + (r - b) * (g - b))
-    if b <= g:
-        return acos(angle)
-    else:
-        return 2 * pi - acos(angle)
-
-
-def rgb_to_intensity(r, g, b):
-    val = (b + g + r) / 3.
-    if val == 0:
+    # 0 <= h < 360
+    if(r==g==b):
+        # print("h")
         return 0
+    if g>=b:
+        try:
+            val=degrees(acos((r-g/2-b/2)/sqrt(r**2+g**2+b**2-g*b-r*g-r*b)))
+        except:
+            val = 0
+        return val
     else:
+        try:
+            val = 360 - degrees(acos((r-g/2-b/2)/sqrt(r**2+g**2+b**2-g*b-r*g-r*b)))
+        except:
+            val = 359
         return val
 
 
+def rgb_to_intensity(r, g, b):
+    # 0 <= i <= 255
+    return (r+g+b)/3
+
+
 def rgb_to_saturity(r, g, b):
-    if r + g + b != 0:
-        return 1. - 3. * np.min([r, g, b]) / (r + g + b)
+    #0.0 <= s <= 1.0
+    if rgb_to_intensity(r,g,b) > 0:
+        return 1 - np.min([r, g, b]) / rgb_to_intensity(r,g,b)
     else:
         return 0
 
@@ -448,28 +472,28 @@ def color_average_filter(im,i,color_mode):
         return Image.merge("RGB",(r,g,b))
     elif color_mode == "HSI":
         imgh,imgv=im.size
-        h=np.empty((imgh,imgv))
-        s=np.empty((imgh,imgv))
-        ii=np.empty((imgh,imgv))
+        h=np.empty((imgv,imgh))
+        s=np.empty((imgv,imgh))
+        ii=np.empty((imgv,imgh))
         for y in range(imgv):
             for x in range(imgh):
-                r,g,b = np.array(im.getpixel((x,y)))/255
-                h[y][x] = rgb_to_hue(r,g,b)*255+0.5
-                s[y][x] = rgb_to_saturity(r,g,b)*255+0.5
-                ii[y][x] = rgb_to_intensity(r,g,b)*255+0.5
+                r,g,b = np.array(im.getpixel((x,y)))
+                h[y][x] = rgb_to_hue(r,g,b)
+                s[y][x] = rgb_to_saturity(r,g,b)
+                ii[y][x] = rgb_to_intensity(r,g,b)
         
         # print(h,s,ii)
         # h=np.array(averging_filter(convert_array_to_img(h),i))
         # s=np.array(averging_filter(convert_array_to_img(s),i))
         ii=np.array(averging_filter(convert_array_to_img(ii),i))
-        h=np.array(h/255,dtype=float)
-        s=np.array(s/255,dtype=float)
-        ii=np.array(ii/255,dtype=float)
+        # h=np.array(h,dtype=float)
+        # s=np.array(s,dtype=float)
+        # ii=np.array(ii,dtype=float)
         # print(h[0][0],s[0][0],ii[0][0])
-        arr=np.empty((imgh,imgv,3),dtype=int)
+        arr=np.empty((imgv,imgh,3),dtype=int)
         for y in range(imgv):
             for x in range(imgh):
-                arr[y][x]=np.array(HSI_to_rgb(h[y][x]/pi*180,s[y][x],ii[y][x]))*255+0.5
+                arr[y][x]=np.array(HSI_to_rgb(h[y][x],s[y][x],ii[y][x]))
         return convert_array_to_img(arr,"RGB")
     elif color_mode=="HSV":
         h,s,v=im.convert("HSV").split()
@@ -495,25 +519,25 @@ def color_sharpening(im,i,color_mode):
         return Image.merge("RGB",(r,g,b))
     elif color_mode == "HSI":
         imgh,imgv=im.size
-        h=np.empty((imgh,imgv))
-        s=np.empty((imgh,imgv))
-        ii=np.empty((imgh,imgv))
+        h=np.empty((imgv,imgh),dtype=float)
+        s=np.empty((imgv,imgh),dtype=float)
+        ii=np.empty((imgv,imgh),dtype=float)
         for y in range(imgv):
             for x in range(imgh):
-                r,g,b = np.array(im.getpixel((x,y)))/255
-                h[y][x] = rgb_to_hue(r,g,b)*255+0.5
-                s[y][x] = rgb_to_saturity(r,g,b)*255+0.5
-                ii[y][x] = rgb_to_intensity(r,g,b)*255+0.5
+                r,g,b = np.array(im.getpixel((x,y)))
+                h[y][x] = rgb_to_hue(r,g,b)
+                s[y][x] = rgb_to_saturity(r,g,b)
+                ii[y][x] = rgb_to_intensity(r,g,b)
         
         ii=np.array(sharpening_filter(convert_array_to_img(ii),i))
-        h=np.array(h/255,dtype=float)
-        s=np.array(s/255,dtype=float)
-        ii=np.array(ii/255,dtype=float)
+        # convert_array_to_img(ii).show()
         # print(h[0][0],s[0][0],ii[0][0])
-        arr=np.empty((imgh,imgv,3),dtype=int)
+        # print(h[171][126],s[171][126],ii[171][126])
+        arr=np.empty((imgv,imgh,3),dtype=int)
         for y in range(imgv):
             for x in range(imgh):
-                arr[y][x]=np.array(HSI_to_rgb(h[y][x]/pi*180,s[y][x],ii[y][x]))*255+0.5
+                arr[y][x]=np.array(HSI_to_rgb(h[y][x],s[y][x],ii[y][x]))
+        # print(arr[171][126])
         return convert_array_to_img(arr,"RGB")
         pass
     elif color_mode=="HSV":
@@ -574,7 +598,7 @@ if "__main__"==__name__:
     # color_sharpening(vim,5,"HSV").show()
     iim=color_average_filter(im,5,"HSI")
     iim.show()
-    # color_sharpening(iim,5,"HSI").show()
+    color_sharpening(iim,5,"HSI").show()
 
     
 
