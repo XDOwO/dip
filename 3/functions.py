@@ -1,10 +1,13 @@
 
-from PIL import Image
 import tkinter
-from math import pi,e,cos,sin,sqrt,acos,radians,degrees
-import numpy as np
-import matplotlib.pyplot as plt
+from math import acos, cos, degrees, e, pi, radians, sin, sqrt
+
 import cv2
+import matplotlib.pyplot as plt
+import numpy as np
+from PIL import Image
+
+
 def histogram(im):
     h=im.size[0]
     v=im.size[1]
